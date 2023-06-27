@@ -4,9 +4,12 @@ import { AdapterUser } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
 import jsonwebtoken from "jsonwebtoken";
 import { JWT } from "next-auth/jwt";
+import { SessionInterface, UserProfile } from "@/common.types";
+import { createUser, getUser } from "./action";
+
 
 // import { createUser, getUser } from "./actions";
-// import { SessionInterface, UserProfile } from "@/common.types";
+
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -16,66 +19,56 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   jwt: {
-    encode: ({ secret, token }) => {
-      const encodedToken = jsonwebtoken.sign(
-        {
-          ...token,
-          iss: "grafbase",
-          exp: Math.floor(Date.now() / 1000) + 60 * 60,
-        },
-        secret
-      );
+    // encode: ({ secret, token }) => {
+    //   console.log("jwt-token", token)
+    //   const encodedToken = jsonwebtoken.sign(
+    //     {
+    //       ...token,
+    //       iss: "grafbase", // issuer 这边的 issuer 也是需要改动的， 日过换成 别的
+    //       exp: Math.floor(Date.now() / 1000) + 60 * 60,
+    //     },
+    //     secret
+    //   );
 
-      return encodedToken;
-    },
-    decode: async ({ secret, token }) => {
-      const decodedToken = jsonwebtoken.verify(token!, secret);
-      return decodedToken as JWT;
-    },
+    //   return encodedToken;
+    // },
+    // decode: async ({ secret, token }) => {
+    //   const decodedToken = jsonwebtoken.verify(token!, secret);
+    //   return decodedToken as JWT;
+    // },
   },
   theme: {
     colorScheme: "light",
     logo: "/logo.svg",
   },
   callbacks: {
-    async session({ session }) {
-      return session;
-      // const email = session?.user?.email as string;
+    // async session({ session }) {
+    //   // now we want to hook up the google user with our database user, 
+    //   // and return the user session session
+    //   const email = session?.user?.email as string;
 
-      // try {
-      //   const data = (await getUser(email)) as { user?: UserProfile };
+    //   try {
+    //     const data = (await getUser(email)) as { user?: UserProfile };
 
-      //   const newSession = {
-      //     ...session,
-      //     user: {
-      //       ...session.user,
-      //       ...data?.user,
-      //     },
-      //   };
+    //     const newSession = {
+    //       ...session,
+    //       user: {
+    //         ...session.user,
+    //         ...data?.user,
+    //       },
+    //     };
 
-      //   return newSession;
+    //     return newSession;
 
-      //   return null;
-      // } catch (error: any) {
-      //   console.error("Error retrieving user data: ", error.message);
-      //   return session;
-      // }
-    },
+    //   } catch (error: any) {
+    //     console.error("Error retrieving user data: ", error.message);
+    //     return session;
+    //   }
+    // },
     async signIn({ user }: { user: AdapterUser | User }) {
       try {
-        // const userExists = (await getUser(user?.email as string)) as {
-        //   user?: UserProfile;
-        // };
-
-        // // 因为google 的原因这边如果没有当前用户也能直接创建用户
-        // if (!userExists.user) {
-        //   await createUser(
-        //     user.name as string,
-        //     user.email as string,
-        //     user.image as string
-        //   );
-        // }
-
+        // sign in when user login 
+        console.log('google signin user', user)
         return true;
       } catch (error: any) {
         console.log("Error checking if user exists: ", error.message);
@@ -85,8 +78,10 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-// export async function getCurrentUser() {
-//   const session = (await getServerSession(authOptions)) as SessionInterface;
 
-//   return session;
-// }
+// 如果使用别的 database，这边就是需要改动的地方，通过 email 获取当前的用户
+export async function getCurrentUser() {
+  const session = (await getServerSession(authOptions)) as SessionInterface;
+
+  return session;
+}

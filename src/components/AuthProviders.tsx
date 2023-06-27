@@ -1,6 +1,6 @@
 "use client";
 
-import { getProviders, signIn } from "next-auth/react";
+import { getProviders, signIn, signOut } from "next-auth/react";
 import React, { useState, useEffect } from "react";
 
 type Provider = {
@@ -15,7 +15,7 @@ type Provider = {
 type Providers = Record<string, Provider>;
 
 const AuthProviders = () => {
-  console.log("auth provider component")
+  
   const [providers, setProvider] = useState<Providers | null>(null);
 
   useEffect(() => {
